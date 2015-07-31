@@ -15,14 +15,10 @@ module Rack
       end
 
       def is_valid?
-        begin
-          if config['validation_error']
-            @response.validate!
-          else
-            @response.is_valid?
-          end
-        rescue OneLogin::RubySaml::ValidationError => e
-          raise ValidationError.new(e.message)
+        if @response.is_valid?
+          return true
+        else
+          raise ValidationError.new(@response.errors.join(", "))
         end
       end
 
