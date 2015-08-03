@@ -158,6 +158,7 @@ module Rack
       # saml_sp: SAML SP's entity_id
       # generate saml_sp from request uri and default path (rack-saml-sp)
       saml_sp_prefix = "#{request.scheme}://#{request.host}#{":#{request.port}" if request.port}#{request.script_name}"
+      saml_idp = @config['saml_idp'].respond_to?(:call) ? @config['saml_idp'].call : @config['saml_idp']
       @config['saml_sp'] ||= "#{saml_sp_prefix}/rack-saml-sp"
       @config['assertion_consumer_service_uri'] ||= "#{saml_sp_prefix}#{@config['protected_path']}"
       # for debug
@@ -187,10 +188,10 @@ module Rack
                 return create_response(500, 'text/html', "Internal Server Error: Invalid discovery service session current sid=#{current_sid}, request sid=#{request.params['target']}")
               end
               session.finish('ds')
-              @config['saml_idp'] = request.params['entityID']
+              saml_idp =  @config['saml_idp'] = request.params['entityID']
             end
             session.start('saml_authreq')
-            handler = RequestHandler.new(request, @config, @metadata['idp_lists'][@config['saml_idp']])
+            handler = RequestHandler.new(request, @config, @metadata['idp_lists'][saml_idp])
             return Rack::Response.new.tap { |r|
               r.redirect handler.authn_request.redirect_uri
             }.finish
@@ -201,7 +202,7 @@ module Rack
         end
       elsif request.request_method == 'POST' && match_protected_path?(request) # process Response
         if session.is_valid?('saml_authreq')
-          handler = ResponseHandler.new(request, @config, @metadata['idp_lists'][@config['saml_idp']])
+          handler = ResponseHandler.new(request, @config, @metadata['idp_lists'][saml_idp])
           begin
             if handler.response.is_valid?
               session.finish('saml_authreq')
