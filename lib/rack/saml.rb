@@ -1,6 +1,7 @@
 require 'rack'
 require 'yaml'
 require 'securerandom'
+require 'rack/saml/configuration'
 
 module Rack
   # Rack::Saml
@@ -39,7 +40,19 @@ module Rack
     class ValidationError < StandardError
     end
 
-    FILE_TYPE = [:config, :metadata, :attribute_map]
+    class << self
+      attr_writer :configuration
+
+      def configuration
+        @configuration ||= Configuration.new
+      end
+
+      def configure
+        yield(configuration)
+      end
+    end
+
+    FILE_TYPE = [:metadata, :attribute_map]
     FILE_NAME = {
       :config => 'rack-saml.yml',
       :metadata => 'metadata.yml',
@@ -64,6 +77,8 @@ module Rack
       FILE_TYPE.each do |type|
         load_file(type)
       end
+
+      @config = self.class.configuration.to_h
 
       if @config['assertion_handler'].nil?
         raise ArgumentError, "'assertion_handler' parameter should be specified in the :config file"
