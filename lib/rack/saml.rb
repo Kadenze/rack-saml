@@ -160,7 +160,7 @@ module Rack
       saml_sp_prefix = "#{request.scheme}://#{request.host}#{":#{request.port}" if request.port}#{request.script_name}"
       saml_idp = @config['saml_idp'].respond_to?(:call) ? @config['saml_idp'].call : @config['saml_idp']
       @config['saml_sp'] ||= "#{saml_sp_prefix}/rack-saml-sp"
-      @config['assertion_consumer_service_uri'] = @config['assertion_consumer_service_uri'].respond_to?(:call) ? @config['assertion_consumer_service_uri'].call : @config['assertion_consumer_service_uri'] 
+      @config['assertion_consumer_service_uri'] = @config['assertion_consumer_service_uri'].respond_to?(:call) ? @config['assertion_consumer_service_uri'].call(request) : @config['assertion_consumer_service_uri'] 
       @config['assertion_consumer_service_uri'] ||= "#{saml_sp_prefix}#{@config['protected_path']}"
       # for debug
       #return [
