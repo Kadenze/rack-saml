@@ -14,6 +14,7 @@ module Rack
       attr_accessor :saml_sp
       attr_accessor :sp_cert
       attr_accessor :sp_key_path
+      attr_accessor :assertion_consumer_service_uri
       # set default values
 
       def initialize
