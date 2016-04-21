@@ -12,7 +12,6 @@ module Rack
           :allowed_clock_drift => config['allowed_clock_drift'],
           :settings => saml_settings
         })
-        @response.settings = saml_settings
       end
 
       def is_valid?
